@@ -46,7 +46,7 @@ class TitleDaoFake(initialTitle: String) : TitleDao {
      */
     private val insertedForNext = Channel<Title>(capacity = Channel.BUFFERED)
 
-    override fun insertTitle(title: Title) {
+    override suspend fun insertTitle(title: Title) {
         insertedForNext.trySend(title)
         _titleLiveData.value = title
     }
@@ -92,7 +92,7 @@ class TitleDaoFake(initialTitle: String) : TitleDao {
  * Testing Fake implementation of MainNetwork
  */
 class MainNetworkFake(var result: String) : MainNetwork {
-    override fun fetchNextTitle() = MakeCompilerHappyForStarterCode() // TODO: replace with `result`
+    override suspend fun fetchNextTitle() = result
 }
 
 /**
@@ -101,7 +101,7 @@ class MainNetworkFake(var result: String) : MainNetwork {
 class MainNetworkCompletableFake() : MainNetwork {
     private var completable = CompletableDeferred<String>()
 
-    override fun fetchNextTitle() = MakeCompilerHappyForStarterCode() // TODO: replace with `completable.await()`
+    override suspend fun fetchNextTitle() = completable.await()
 
     fun sendCompletionToAllCurrentRequests(result: String) {
         completable.complete(result)
@@ -111,43 +111,6 @@ class MainNetworkCompletableFake() : MainNetwork {
     fun sendErrorToCurrentRequests(throwable: Throwable) {
         completable.completeExceptionally(throwable)
         completable = CompletableDeferred()
-    }
-
-}
-
-typealias MakeCompilerHappyForStarterCode = FakeCallForRetrofit<String>
-
-/**
- * This class only exists to make the starter code compile. Remove after refactoring retrofit to use
- * suspend functions.
- */
-class FakeCallForRetrofit<T> : Call<T> {
-    override fun enqueue(callback: Callback<T>) {
-        // nothing
-    }
-
-    override fun isExecuted() = false
-
-    override fun clone(): Call<T> {
-        return this
-    }
-
-    override fun isCanceled() = true
-
-    override fun cancel() {
-        // nothing
-    }
-
-    override fun execute(): Response<T> {
-        TODO("Not implemented")
-    }
-
-    override fun request(): Request {
-        TODO("Not implemented")
-    }
-
-    override fun timeout(): Timeout {
-        TODO("Not yet implemented")
     }
 
 }
